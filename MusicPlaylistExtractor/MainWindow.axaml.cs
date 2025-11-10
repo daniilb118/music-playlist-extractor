@@ -17,6 +17,7 @@ public partial class MainWindow : Window
     private readonly TextBlock _playlistDescription;
     private readonly DataGrid _songsGrid;
     private readonly Grid _playlistInfoGrid;
+    private readonly AmazonPlaylistScraper _scraper;
 
     public MainWindow()
     {
@@ -29,7 +30,15 @@ public partial class MainWindow : Window
         _playlistDescription = this.FindControl<TextBlock>("PlaylistDescription") ?? throw new InvalidOperationException("Cannot find PlaylistDescription");
         _songsGrid = this.FindControl<DataGrid>("SongsGrid") ?? throw new InvalidOperationException("Cannot find SongsGrid");
         _playlistInfoGrid = this.FindControl<Grid>("PlaylistInfoGrid") ?? throw new InvalidOperationException("Cannot find PlaylistInfoGrid");
-        _loadButton.Click += LoadButton_Click;
+        try
+        {
+            _scraper = new AmazonPlaylistScraper();
+            _loadButton.Click += LoadButton_Click;
+        }
+        catch (Exception ex)
+        {
+            ShowErrorMessage($"An error occurred: {ex.Message}");
+        }
     }
 
     private async Task LoadPlaylist()
@@ -42,14 +51,14 @@ public partial class MainWindow : Window
 
         try
         {
-            var playlist = await AmazonPlaylistScraper.ScrapePlaylistAsync(url);
+            var playlist = await _scraper.ScrapePlaylistAsync(url);
             var viewModel = new MusicPlaylistViewModel(playlist);
             DataContext = viewModel;
-            _playlistName.Text = viewModel.Name;
-            _playlistDescription.Text = viewModel.Description;
-            if (viewModel.AvatarURL != null)
+            _playlistName.Text = playlist.Name;
+            _playlistDescription.Text = playlist.Description;
+            if (playlist.AvatarURL != null)
             {
-                _playlistAvatar.Source = await LoadImageFromUrl(viewModel.AvatarURL);
+                _playlistAvatar.Source = await LoadImageFromUrl(playlist.AvatarURL);
             }
 
             _playlistInfoGrid.IsVisible = true;
@@ -62,8 +71,9 @@ public partial class MainWindow : Window
         }
     }
 
-    private void ShowErrorMessage(string message)
+    public void ShowErrorMessage(string message)
     {
+        _playlistInfoGrid.IsVisible = true;
         _playlistName.Text = message;
         _playlistDescription.Text = null;
         _playlistAvatar.Source = null;
