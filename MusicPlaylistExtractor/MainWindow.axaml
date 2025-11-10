@@ -2,8 +2,33 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:MusicPlaylistExtractor.ViewModels"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="MusicPlaylistExtractor.MainWindow"
+        x:DataType="vm:MusicPlaylistViewModel"
         Title="MusicPlaylistExtractor">
-    Welcome to Avalonia!
+
+    <DockPanel Margin="20">
+        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
+            <TextBox Name="UrlTextBox" Watermark="Enter Playlist URL..." Margin="0,0,10,0" />
+            <Button Grid.Column="1" Name="LoadButton" Content="Load"/>
+        </Grid>
+
+        <Grid Name="PlaylistInfoGrid" DockPanel.Dock="Top" ColumnDefinitions="Auto,*" Margin="0,10,0,0" IsVisible="False">
+            <Image Name="PlaylistAvatar" Width="100" Height="100" Margin="0,0,10,0"/>
+            <StackPanel Grid.Column="1">
+                <TextBlock Name="PlaylistName" FontWeight="Bold" FontSize="16"/>
+                <TextBlock Name="PlaylistDescription" TextWrapping="Wrap"/>
+            </StackPanel>
+        </Grid>
+
+        <DataGrid Name="SongsGrid" ItemsSource="{Binding Songs}" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,10,0,0" IsVisible="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Song name" Binding="{Binding Name}" Width="*"/>
+                <DataGridTextColumn Header="Artist name" Binding="{Binding Artist}" Width="*"/>
+                <DataGridTextColumn Header="Album name" Binding="{Binding Album}" Width="*"/>
+                <DataGridTextColumn Header="Duration" Binding="{Binding Duration}" Width="100"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
 </Window>
